@@ -33,7 +33,7 @@ export default function ProfileDetail({ profiles }) {
     borderBottom: 'solid 1px #dddddd',
     paddingBottom: '20px'
     }}>
-      <Avatar alt={profiles?.businessName} src={profiles.logo} className={classes.large} />
+      <Avatar alt={profiles?.businessName} className={classes.large} />
     </div>
         <List className={classes.root}>
           <ListItem >

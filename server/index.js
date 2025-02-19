@@ -9,7 +9,6 @@ import nodemailer from 'nodemailer'
 import pdf from 'html-pdf'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
-const InvoiceModel = require('./models/InvoiceModel.js')
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -17,6 +16,7 @@ const __dirname = dirname(__filename)
 import invoiceRoutes from './routes/invoices.js'
 import clientRoutes from './routes/clients.js'
 import userRoutes from './routes/userRoutes.js'
+import InvoiceModel from './models/InvoiceModel.js'
 
 import profile from './routes/profile.js'
 import pdfTemplate from './documents/index.js'
@@ -48,8 +48,13 @@ const transporter = nodemailer.createTransport({
     }
 })
 
+// app.get('/pdf', (req, res) => {
+//     const { email, company } = req.body
 
-var options = { format: 'A4' };
+// });
+
+
+    var options = { format: 'A4' };
 //SEND PDF INVOICE VIA EMAIL
 app.post('/send-pdf', (req, res) => {
     const { email, company } = req.body

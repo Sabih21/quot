@@ -201,7 +201,9 @@ if(!invoice) {
 
     return (
         <div className={styles.PageLayout}>
-           {invoice?.creator?.includes(user?.result?._id || user?.result?.googleId) && (
+          
+          
+           {(
             <div className={styles.buttons}>
                   <ProgressButton 
                     onClick={sendPdf} 
