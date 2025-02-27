@@ -9,7 +9,6 @@ import nodemailer from 'nodemailer'
 import pdf from 'html-pdf'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
-import TaxModel from './models/TaxModel.js';
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -21,14 +20,23 @@ import InvoiceModel from './models/InvoiceModel.js'
 
 import profile from './routes/profile.js'
 import pdfTemplate from './documents/index.js'
+import pdfsecondTemplate from './documents/secondindex.js'
+// pdfthirdTemplate
+import pdfthirdTemplate from './documents/thirdindex.js'
+// In your main file
+import  productRoutes  from './routes/productRoutes.js';
+
 // import invoiceTemplate from './documents/invoice.js'
 import emailTemplate from './documents/email.js'
+import TaxModel from './models/TaxModel.js';
 
 const app = express()
 dotenv.config()
 
 app.use((express.json({ limit: "30mb", extended: true})))
 app.use((express.urlencoded({ limit: "30mb", extended: true})))
+
+
 app.use((cors()))
 
 app.use('/invoices', invoiceRoutes)
@@ -85,6 +93,21 @@ app.post('/send-pdf', (req, res) => {
 });
 
 
+app.post('/taxes', async (req, res) => {
+  const { name, rate, type } = req.body;
+
+  const newTax = new TaxModel({ name, rate, type });
+
+  try {
+    await newTax.save();
+    res.status(201).json({ message: 'Tax created successfully!', tax: newTax });
+  } catch (error) {
+    res.status(500).json({ message: 'Error creating tax', error });
+  }
+
+});
+
+
 //Problems downloading and sending invoice
 // npm install html-pdf -g
 // npm link html-pdf
@@ -99,6 +122,43 @@ app.post('/create-pdf', (req, res) => {
         res.send(Promise.resolve());
     });
 });
+
+//second pdf
+
+app.post('/create-secondpdf', (req, res) => {
+  console.log('Received request:', req.body); // Log the incoming request
+  pdf.create(pdfsecondTemplate(req.body), {}).toFile('secondinvoice.pdf', (err) => {
+    if (err) {
+      return res.status(500).send("Error creating PDF");
+    }
+    res.status(200).send("PDF created successfully");
+  });
+});
+
+
+
+//SEND PDF INVOICE
+app.get('/fetch-secondpdf', (req, res) => {
+  res.sendFile(`${__dirname}/secondinvoice.pdf`)
+})
+
+//thirdPDF
+
+app.post('/create-thirdpdf', (req, res) => {
+  console.log('Received request:', req.body); // Log the incoming request
+  pdf.create(pdfthirdTemplate(req.body), {}).toFile('thirdinvoice.pdf', (err) => {
+    if (err) {
+      return res.status(500).send("Error creating PDF");
+    }
+    res.status(200).send("PDF created successfully");
+  });
+});
+
+app.get('/fetch-thirdpdf', (req, res) => {
+  res.sendFile(`${__dirname}/thirdinvoice.pdf`)
+})
+
+
 
 //SEND PDF INVOICE
 app.get('/fetch-pdf', (req, res) => {
@@ -135,27 +195,11 @@ app.get('/', (req, res) => {
     }
   });
 
-  app.post('/api/taxes', async (req, res) => {
-    const { name, rate, type } = req.body;
-  
-    const newTax = new TaxModel({ name, rate, type });
-  
-    try {
-      await newTax.save();
-      res.status(201).json({ message: 'Tax created successfully!', tax: newTax });
-    } catch (error) {
-      res.status(500).json({ message: 'Error creating tax', error });
-    }
-  
-  });
+  app.use('/api', productRoutes);
 
-  
 
 const DB_URL = process.env.DB_URL
 const PORT = process.env.PORT || 5000
-
-
-
 
 mongoose.connect(DB_URL, { useNewUrlParser: true, useUnifiedTopology: true})
     .then(() => app.listen(PORT, () => console.log(`Server running on port: ${PORT}`)))

@@ -20,6 +20,8 @@ import Reset from './components/Password/Reset'
 import TaxList from './components/Tax/TaxList';
 import AddTax from './components/Tax/AddTax';
 import UpdateTax from './components/Tax/UpdateTax';
+import ProductList from './components/Product/ProductList';
+import AddProduct from './components/Product/AddProduct';
 function App() {
 
   const user = JSON.parse(localStorage.getItem('profile'))
@@ -40,6 +42,9 @@ function App() {
           <Route path="/tax" exact component={TaxList} />
           <Route path="/add/tax" exact component={AddTax} />
           <Route path="/update/tax" exact component={UpdateTax} />
+
+          <Route path="/product/" exact component={ProductList} />
+          <Route path="/product/add/" exact component={AddProduct} />
 
           <Route path="/settings" exact component={Settings} />
           <Route path="/dashboard" exact component={Dashboard} />

@@ -51,6 +51,7 @@ const InvoiceDetails = () => {
     const history = useHistory()
     const [sendStatus, setSendStatus] = useState(null)
     const [downloadStatus, setDownloadStatus] = useState(null)
+    
     // eslint-disable-next-line
     const [openSnackbar, closeSnackbar] = useSnackbar()
     const user = JSON.parse(localStorage.getItem('profile'))
@@ -145,6 +146,65 @@ const InvoiceDetails = () => {
       }).then(() =>  setDownloadStatus('success'))
   }
 
+  //Second pdf
+  const createAndDownloadsecondPdf = () => {
+    setDownloadStatus('loading')
+    axios.post('http://localhost:5000/create-secondpdf', 
+    { name: invoice.client.name,
+      address: invoice.client.address,
+      phone: invoice.client.phone,
+      email: invoice.client.email,
+      dueDate: invoice.dueDate,
+      date: invoice.createdAt,
+      id: invoice.invoiceNumber,
+      notes: invoice.notes,
+      subTotal: toCommas(invoice.subTotal),
+      total: toCommas(invoice.total),
+      type: invoice.type,
+      vat: invoice.vat,
+      items: invoice.items,
+      status: invoice.status,
+      totalAmountReceived: toCommas(totalAmountReceived),
+      balanceDue: toCommas(total - totalAmountReceived),
+      company: company,
+  })
+  .then(() => axios.get(`${process.env.REACT_APP_API}/fetch-secondpdf`, { responseType: 'blob' }))
+      .then((res) => {
+        const pdfBlob = new Blob([res.data], { type: 'application/pdf' });
+
+        saveAs(pdfBlob, 'invoice.pdf')
+      }).then(() =>  setDownloadStatus('success'))
+  }
+
+  //Second pdf
+  const createAndDownloadthirdPdf = () => {
+    setDownloadStatus('loading')
+    axios.post('http://localhost:5000/create-thirdpdf', 
+    { name: invoice.client.name,
+      address: invoice.client.address,
+      phone: invoice.client.phone,
+      email: invoice.client.email,
+      dueDate: invoice.dueDate,
+      date: invoice.createdAt,
+      id: invoice.invoiceNumber,
+      notes: invoice.notes,
+      subTotal: toCommas(invoice.subTotal),
+      total: toCommas(invoice.total),
+      type: invoice.type,
+      vat: invoice.vat,
+      items: invoice.items,
+      status: invoice.status,
+      totalAmountReceived: toCommas(totalAmountReceived),
+      balanceDue: toCommas(total - totalAmountReceived),
+      company: company,
+  })
+  .then(() => axios.get(`${process.env.REACT_APP_API}/fetch-thirdpdf`, { responseType: 'blob' }))
+      .then((res) => {
+        const pdfBlob = new Blob([res.data], { type: 'application/pdf' });
+
+        saveAs(pdfBlob, 'invoice.pdf')
+      }).then(() =>  setDownloadStatus('success'))
+  }
 
   //SEND PDF INVOICE VIA EMAIL
   const sendPdf = (e) => {
@@ -218,6 +278,19 @@ if(!invoice) {
                   state={downloadStatus}>
                   Download PDF
                 </ProgressButton>
+
+                <ProgressButton 
+                  onClick={createAndDownloadsecondPdf} 
+                  state={downloadStatus}>
+                  Second PDF
+                </ProgressButton>
+
+                <ProgressButton 
+                  onClick={createAndDownloadthirdPdf} 
+                  state={downloadStatus}>
+                  thirdpdf
+                </ProgressButton>
+
 
                 <button 
                 className={styles.btn}  
