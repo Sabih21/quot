@@ -30,6 +30,10 @@ import  productRoutes  from './routes/productRoutes.js';
 import emailTemplate from './documents/email.js'
 import TaxModel from './models/TaxModel.js';
 
+import companyRoutes from  './routes/companyRoutes.js';
+
+import path from 'path';
+
 const app = express()
 dotenv.config()
 
@@ -61,6 +65,7 @@ const transporter = nodemailer.createTransport({
 //     const { email, company } = req.body
 
 // });
+app.use('/uploads', express.static(path.join(path.resolve(), 'uploads')));
 
 
     var options = { format: 'A4' };
@@ -196,6 +201,9 @@ app.get('/', (req, res) => {
   });
 
   app.use('/api', productRoutes);
+
+
+  app.use('/api/companies', companyRoutes);
 
 
 const DB_URL = process.env.DB_URL

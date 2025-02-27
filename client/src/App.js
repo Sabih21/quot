@@ -22,6 +22,8 @@ import AddTax from './components/Tax/AddTax';
 import UpdateTax from './components/Tax/UpdateTax';
 import ProductList from './components/Product/ProductList';
 import AddProduct from './components/Product/AddProduct';
+import CompanyForm from './components/company/CompanyForm';
+import CompanyList from './components/company/CompanyList';
 function App() {
 
   const user = JSON.parse(localStorage.getItem('profile'))
@@ -45,6 +47,9 @@ function App() {
 
           <Route path="/product/" exact component={ProductList} />
           <Route path="/product/add/" exact component={AddProduct} />
+
+          <Route path="/company/" exact component={CompanyList} />
+          <Route path="/company/add/" exact component={CompanyForm} />
 
           <Route path="/settings" exact component={Settings} />
           <Route path="/dashboard" exact component={Dashboard} />
