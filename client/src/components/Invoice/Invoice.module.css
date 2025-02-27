@@ -15,9 +15,13 @@
   font-size: 15px;
   color: gray;
 }
+.MuiInputBase-input{
 
+border: 0px;
+border-bottom: 1px solid black;
+}
 .invoiceLayout {
-  width: 63%;
+  width: 90%;
   min-height: 500px;
   background-color: white;
   margin: 100px auto;

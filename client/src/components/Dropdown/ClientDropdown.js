@@ -1,0 +1,36 @@
+import React, { useState } from "react";
+import CreatableSelect from "react-select/creatable";
+
+const ClientDropdown = ({ clients, invoice, setClient, onClientChange }) => {
+    const [options, setOptions] = useState(
+        clients.map(client => ({ value: client.name, label: client.name }))
+    );
+
+    const handleChange = (selectedOption) => {
+        const clientData = selectedOption ? { name: selectedOption.value } : null;
+        setClient(clientData);
+        if (onClientChange) onClientChange(clientData);  // Call invoice.js function
+    };
+
+    const handleCreate = (inputValue) => {
+        const newOption = { value: inputValue, label: inputValue };
+        setOptions([...options, newOption]);
+        const clientData = { name: inputValue };
+        setClient(clientData);
+        if (onClientChange) onClientChange(clientData);  // Call invoice.js function
+    };
+
+    return (
+        <CreatableSelect
+            isClearable
+            options={options}
+            onChange={handleChange}
+            onCreateOption={handleCreate}
+            placeholder="Select or add a customer..."
+            value={options.find(option => option.value === invoice?.client?.name) || null}
+            styles={{ container: (base) => ({ ...base, width: "100%" }) }}
+        />
+    );
+};
+
+export default ClientDropdown;

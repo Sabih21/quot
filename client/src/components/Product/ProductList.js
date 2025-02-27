@@ -56,7 +56,6 @@ function ProductTable() {
               <td>{product.unit}</td>
               <td>₹{product.pricePerUnit.toFixed(2)}</td>
               <td>
-                <button className="edit-btn">Edit</button>
                 <button className="delete-btn" onClick={() => handleDelete(product._id)}>
                   Delete
                 </button>

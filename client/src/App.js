@@ -49,7 +49,7 @@ function App() {
           <Route path="/product/add/" exact component={AddProduct} />
 
           <Route path="/company/" exact component={CompanyList} />
-          <Route path="/company/add/" exact component={CompanyForm} />
+          <Route path="/add/company" exact component={CompanyForm} />
 
           <Route path="/settings" exact component={Settings} />
           <Route path="/dashboard" exact component={Dashboard} />

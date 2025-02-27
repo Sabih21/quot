@@ -30,6 +30,7 @@ import axios from 'axios';
 import { saveAs } from 'file-saver';
 import Modal from '../Payments/Modal'
 import PaymentHistory from './PaymentHistory'
+import SignatureCompany from '../Dropdown/SignatureCompany'
 
 const InvoiceDetails = () => {
 
@@ -119,24 +120,9 @@ const InvoiceDetails = () => {
 
   const createAndDownloadPdf = () => {
     setDownloadStatus('loading')
+    console.log(invoice);
     axios.post(`${process.env.REACT_APP_API}/create-pdf`, 
-    { name: invoice.client.name,
-      address: invoice.client.address,
-      phone: invoice.client.phone,
-      email: invoice.client.email,
-      dueDate: invoice.dueDate,
-      date: invoice.createdAt,
-      id: invoice.invoiceNumber,
-      notes: invoice.notes,
-      subTotal: toCommas(invoice.subTotal),
-      total: toCommas(invoice.total),
-      type: invoice.type,
-      vat: invoice.vat,
-      items: invoice.items,
-      status: invoice.status,
-      totalAmountReceived: toCommas(totalAmountReceived),
-      balanceDue: toCommas(total - totalAmountReceived),
-      company: company,
+    { id: invoice._id,
   })
       .then(() => axios.get(`${process.env.REACT_APP_API}/fetch-pdf`, { responseType: 'blob' }))
       .then((res) => {
@@ -258,41 +244,41 @@ if(!invoice) {
   )
 }
 
-
     return (
+
         <div className={styles.PageLayout}>
-          
+            
           
            {(
             <div className={styles.buttons}>
-                  <ProgressButton 
+                  {/* <ProgressButton 
                     onClick={sendPdf} 
                     state={sendStatus}
                     onSuccess={()=> openSnackbar("Invoice sent successfully")}
                   >
                   Send to Customer
-                  </ProgressButton>
+                  </ProgressButton> */}
               
                 <ProgressButton 
                   onClick={createAndDownloadPdf} 
                   state={downloadStatus}>
-                  Download PDF
+                  Download PDF (Style 1)
                 </ProgressButton>
 
                 <ProgressButton 
                   onClick={createAndDownloadsecondPdf} 
                   state={downloadStatus}>
-                  Second PDF
+                  Download PDF (Style 2)
                 </ProgressButton>
 
                 <ProgressButton 
                   onClick={createAndDownloadthirdPdf} 
                   state={downloadStatus}>
-                  thirdpdf
+                  Download PDF (Style 3)
                 </ProgressButton>
 
 
-                <button 
+                {/* <button 
                 className={styles.btn}  
                 onClick={() => editInvoice(invoiceData._id)}
                 > 
@@ -308,7 +294,7 @@ if(!invoice) {
                   <MonetizationOnIcon style={iconSize} 
                 /> 
                 Record Payment
-                </button>
+                </button> */}
             </div>
              )}
 
@@ -356,7 +342,7 @@ if(!invoice) {
                     )}
                     <Container>
                         <Typography variant="overline" style={{color: 'gray', paddingRight: '3px'}} gutterBottom>Bill to</Typography>
-                        <Typography variant="subtitle2" gutterBottom>{client.name}</Typography>
+                        <Typography variant="subtitle2" gutterBottom>{client?.name}</Typography>
                         <Typography variant="body2" >{client?.email}</Typography>
                         <Typography variant="body2" >{client?.phone}</Typography>
                         <Typography variant="body2">{client?.address}</Typography>
@@ -364,8 +350,6 @@ if(!invoice) {
                 </Grid>
 
                 <Grid item style={{marginRight: 20, textAlign: 'right'}}>
-                    <Typography variant="overline" style={{color: 'gray'}} gutterBottom>Status</Typography>
-                    <Typography variant="h6" gutterBottom style={{color: checkStatus()}}>{totalAmountReceived >= total ? 'Paid':status}</Typography>
                     <Typography variant="overline" style={{color: 'gray'}} gutterBottom>Date</Typography>
                     <Typography variant="body2" gutterBottom>{moment().format("MMM Do YYYY")}</Typography>
                     <Typography variant="overline" style={{color: 'gray'}} gutterBottom>Due Date</Typography>
@@ -378,70 +362,82 @@ if(!invoice) {
 
         <form>
             <div>
+                <TableContainer component={Paper}>
+                    <Table aria-label="invoice table">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Item</TableCell>
+                                <TableCell>Qty</TableCell>
+                                <TableCell>Price</TableCell>
+                                <TableCell>Discount</TableCell>
+                                <TableCell>Tax</TableCell>
+                                <TableCell>Amount</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {invoiceData?.items?.map((itemField, index) => {
 
-    <TableContainer component={Paper}>
-      <Table className={classes.table} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell>Item</TableCell>
-            <TableCell >Qty</TableCell>
-            <TableCell>Price</TableCell>
-            <TableCell >Disc(%)</TableCell>
-            <TableCell >Amount</TableCell>
-           
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {invoiceData?.items?.map((itemField, index) => (
-            <TableRow key={index}>
-              <TableCell  scope="row" style={{width: '40%' }}> <InputBase style={{width: '100%'}} outline="none" sx={{ ml: 1, flex: 1 }} type="text" name="itemName" value={itemField.itemName} placeholder="Item name or description" readOnly /> </TableCell>
-              <TableCell align="right"> <InputBase sx={{ ml: 1, flex: 1 }} type="number" name="quantity" value={itemField?.quantity} placeholder="0" readOnly /> </TableCell>
-              <TableCell align="right"> <InputBase sx={{ ml: 1, flex: 1 }} type="number" name="unitPrice" value={itemField?.unitPrice} placeholder="0" readOnly /> </TableCell>
-              <TableCell align="right"> <InputBase sx={{ ml: 1, flex: 1 }} type="number" name="discount"  value={itemField?.discount} readOnly /> </TableCell>
-              <TableCell align="right"> <InputBase sx={{ ml: 1, flex: 1 }} type="number" name="amount"  value={(itemField?.quantity * itemField.unitPrice) - (itemField.quantity * itemField.unitPrice) * itemField.discount / 100} readOnly /> </TableCell>
-              
-              
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-                <div className={styles.addButton}>
-                </div>
+                                const unitPrice = parseFloat(itemField.unitPrice) || 0;
+                                const quantity = parseFloat(itemField.quantity) || 0;
+                                const discountPer = parseFloat(itemField.discountPer) || 0;
+                                const discountAmo = parseFloat(itemField.discountAmo) || ((unitPrice * quantity) * discountPer) / 100;
+                                const taxRate = parseFloat(itemField.tax) || 0;
+                                const taxAmo = ((unitPrice * quantity) * taxRate) / 100;
+                                const amount = (unitPrice * quantity) - discountAmo + taxAmo;
+
+                                return (
+                                    <TableRow key={index}>
+                                        <TableCell style={{ width: "40%" }}>
+                                            <InputBase fullWidth type="text" name="itemName" value={itemField.itemName} readOnly />
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <InputBase type="number" name="quantity" value={itemField.quantity} readOnly />
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <InputBase type="text" name="unitPrice" value={`₹ ${itemField.unitPrice}`} readOnly />
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <InputBase type="text" name="discountAmo" value={`₹ ${discountAmo.toFixed(2)} (${discountPer}%)`}  readOnly />
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <InputBase type="text" name="tax"
+                                            value={`₹ ${taxAmo.toFixed(2)} (${taxRate}%)`} 
+                                             readOnly />
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <InputBase type="text" name="amount" value={`₹ ${amount.toFixed(2)}`} readOnly />
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             </div>
-                
-                <div className={styles.invoiceSummary}>
-                    <div className={styles.summary}>Invoice Summary</div>
-                    <div className={styles.summaryItem}>
-                        <p>Subtotal:</p>
-                        <h4>{subTotal}</h4>
-                    </div>
-                    <div className={styles.summaryItem}>
-                        <p>{`VAT(${rates}%):`}</p>
-                        <h4>{vat}</h4>
-                    </div>
-                    <div className={styles.summaryItem}>
-                        <p>Total</p>
-                        <h4>{currency} {toCommas(total)}</h4>
-                    </div>
-                    <div className={styles.summaryItem}>
-                        <p>Paid</p>
-                        <h4>{currency} {toCommas(totalAmountReceived)}</h4>
-                    </div>
 
-                    <div className={styles.summaryItem}>
-                        <p>Balance</p>
-                        <h4 style={{color: "black", fontSize: "18px", lineHeight: "8px"}}>{currency} {toCommas(total - totalAmountReceived)}</h4>
-                    </div>
-                    
-                </div>
+            {/* Invoice Summary */}
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0" }}>
+        <p>Subtotal:</p> <h4>₹ {subTotal.toFixed(2)}</h4>
+    </div>
+    <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", fontWeight: "bold", borderTop: "1px solid #ddd", marginTop: "5px" }}>
+        <p>Total:</p> <h4>₹ {total.toFixed(2)}</h4>
+    </div>
+                          
+                          <hr></hr>
+                          <br></br>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        {invoiceData.notes && (
+            <div className="note" style={{width:"50%"}}>
+              <Typography variant="h6">Note:</Typography>
+                {/* <h4 style={{paddingLeft:0}}></h4> */}
+                <p>{invoiceData.notes}</p>
+            </div>
+        )}
+        
+        <SignatureCompany companyId={invoiceData.selectedCompany?.value} />
+    </div>
 
-                <div className={styles.note}>
-                    <h4 style={{marginLeft: '-10px'}}>Note/Payment Info</h4>
-                    <p style={{fontSize: '14px'}}>{invoiceData.notes}</p>
-                </div>
 
-            {/* <button className={styles.submitButton} type="submit">Save and continue</button> */}
         </form>
     </div>
         </div>

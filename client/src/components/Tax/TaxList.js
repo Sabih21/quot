@@ -30,7 +30,7 @@ function TaxList() {
   return (
     <div className="tax-list-container">
       <h2 className="tax-list-title">Tax List</h2>
-      <Link to="/add" className="add-button">
+      <Link to="/add/tax" className="add-button">
         <button>Add New Tax</button>
       </Link>
       <ul className="tax-list">

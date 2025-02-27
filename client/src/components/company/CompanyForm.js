@@ -20,34 +20,53 @@ const CompanyForm = ({ refreshData }) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            refreshData(); // Refresh the company list
+            alert("Company Created Successfully");
+            window.location.href="/company";
         } catch (error) {
             console.error('Error creating company:', error);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input
-                type="text"
-                placeholder="Company Name"
-                value={company_name}
-                onChange={(e) => setCompanyName(e.target.value)}
-                required
-            />
-            <textarea
-                placeholder="Description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-            />
-            <input
-                type="file"
-                onChange={(e) => setImage(e.target.files[0])}
-                required
-            />
-            <button type="submit">Add Company</button>
-        </form>
+        <div className="container">
+            <div className="form-container">
+                <h2 className="form-title">Add New Company</h2>
+                <form onSubmit={handleSubmit} className="company-form">
+                    <div className="form-group">
+                        <label htmlFor="company_name">Company Name:</label>
+                        <input
+                            id="company_name"
+                            type="text"
+                            value={company_name}
+                            onChange={(e) => setCompanyName(e.target.value)}
+                            required
+                            className="form-input"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="description">Description:</label>
+                        <textarea
+                            id="description"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            required
+                            className="form-input"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="image">Signature Image:</label>
+                        <input
+                            id="image"
+                            type="file"
+                            onChange={(e) => setImage(e.target.files[0])}
+                            required
+                            className="form-input"
+                        />
+                    </div>
+                    <button type="submit" className="submit-btn">Add Company</button>
+                </form>
+            </div>
+        </div>
     );
 };
 

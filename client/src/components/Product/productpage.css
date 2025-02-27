@@ -6,6 +6,7 @@
     justify-content: center;
     display: flex;
     margin-top: 20px;
+    align-items: flex-start;
   }
   
   /* Page title */
@@ -18,6 +19,9 @@
   }
   
   /* Product table styling */
+  .product-table tr,td{ 
+    height:100px;
+  }
   .product-table {
     width: 50%;
     border-collapse: collapse;

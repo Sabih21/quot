@@ -5,7 +5,9 @@ import { useParams } from 'react-router-dom'
 import moment from 'moment'
 import { useHistory } from 'react-router-dom'
 import { toCommas } from '../../utils/utils'
+import Creatable from 'react-select/creatable';
 
+import CreatableSelect from 'react-select/creatable';
 import IconButton from '@material-ui/core/IconButton';
 import DeleteOutlineRoundedIcon from '@material-ui/icons/DeleteOutlineRounded';
 import DateFnsUtils from '@date-io/date-fns';
@@ -36,6 +38,12 @@ import AddClient from './AddClient';
 import InvoiceType from './InvoiceType';
 import axios from 'axios'
 import { useLocation } from 'react-router-dom'
+import ClientDropdown from '../Dropdown/ClientDropdown'
+import TaxDropdown from '../Dropdown/TaxDropdown'
+import Discount from '../Dropdown/Discount'
+import ProductDropdown from '../Dropdown/ProductDropdown'
+import Select from 'react-select';
+
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -159,9 +167,29 @@ const Invoice = () => {
     const handleChange =(index, e) => {
         const values = [...invoiceData.items]
         values[index][e.target.name] = e.target.value
-        setInvoiceData({...invoiceData, items: values})
-        
+        setInvoiceData({...invoiceData, items: values})   
     }
+
+    const [companies, setCompanies] = useState([]);
+    const [selectedCompany, setSelectedCompany] = useState(null);
+
+    const fetchCompanies = async () => {
+        try {
+            const res = await axios.get('http://localhost:5000/api/companies');
+            setCompanies(res.data);
+        } catch (error) {
+            console.error('Error fetching companies:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchCompanies();
+    }, []);
+
+    const companyOptions = companies.map((company) => ({
+        value: company._id,
+        label: company.company_name
+    }));
 
     useEffect(() => {
             //Get the subtotal
@@ -172,6 +200,7 @@ const Invoice = () => {
                 if(arr[i].value) {
                     subtotal += +arr[i].value;
                 }
+                console.log(subtotal);
                 // document.getElementById("subtotal").value = subtotal;
                 setSubTotal(subtotal)
             }
@@ -199,7 +228,7 @@ const Invoice = () => {
 
     const handleAddField = (e) => {
         e.preventDefault()
-        setInvoiceData((prevState) => ({...prevState, items: [...prevState.items,  {itemName: '', unitPrice: '', quantity: '', discount: '', amount: '' }]}))
+        setInvoiceData((prevState) => ({...prevState, items: [...prevState.items,  {itemName: '', unitPrice: '', quantity: '1', discount: '', amount: '' }]}))
     }
 
     const handleRemoveField =(index) => {
@@ -209,8 +238,6 @@ const Invoice = () => {
         // console.log(values)
     }
     
-
-    console.log(invoiceData)
 
     const handleSubmit =  async (e ) => {
         e.preventDefault()
@@ -229,7 +256,7 @@ const Invoice = () => {
             })) 
          history.push(`/invoice/${invoice._id}`)
         } else {
-
+            debugger;
         dispatch(createInvoice({
             ...invoiceData, 
             subTotal: subTotal, 
@@ -244,6 +271,7 @@ const Invoice = () => {
                 : Number(invoiceData.invoiceNumber)
             }`,
             client, 
+            selectedCompany,
             type: type, 
             status: status, 
             paymentRecords: [], 
@@ -266,8 +294,6 @@ const Invoice = () => {
       if(!user) {
         history.push('/login')
       }
-    
-
     return (
     <div className={styles.invoiceLayout}>
         <form onSubmit={handleSubmit} className="mu-form">
@@ -322,7 +348,7 @@ const Invoice = () => {
                                 </>
                             )}
                             <div style={client? {display: 'none'} :  {display: 'block'}}>
-                                <Autocomplete
+                                {/* <Autocomplete
                                             {...clientsProps}
                                             PaperComponent={CustomPaper}
                                                 renderInput={(params) => <TextField {...params}
@@ -334,21 +360,27 @@ const Invoice = () => {
                                             value={clients?.name}
                                             onChange={(event, value) => setClient(value)}
                                             
+                                    /> */}
+  
+                                    <ClientDropdown 
+                                        clients={clients} 
+                                        invoice={invoice} 
+                                        setClient={setClient} 
+                                        onClientChange={(value) => setClient(value)} 
                                     />
 
+
                             </div>
-                            {!client && 
-                                <>
-                                <Grid item style={{paddingBottom: '10px'}}>
-                                    <Chip
-                                        avatar={<Avatar>+</Avatar>}
-                                        label="New Customer"
-                                        onClick={() => setOpen(true)}
-                                        variant="outlined"
-                                    />
-                                </Grid>
-                                </>
-                            }
+                        </Container>
+                        <Container>
+                            <Typography variant="overline" style={{ color: 'gray', paddingRight: '3px' }} gutterBottom>From</Typography>
+                            <Select
+                                value={selectedCompany}
+                                onChange={setSelectedCompany}
+                                options={companyOptions}
+                                placeholder="Select a company"
+                                isClearable
+                            />
                         </Container>
                     </Grid>
 
@@ -366,39 +398,84 @@ const Invoice = () => {
             </Container>
 
         
-    <div>
+    <div>   
+    
 
-        <TableContainer component={Paper} className="tb-container">
-        <Table className={classes.table} aria-label="simple table">
-            <TableHead>
-            <TableRow>
-                <TableCell>Item</TableCell>
-                <TableCell >Qty</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell >Disc(%)</TableCell>
-                <TableCell >Amount</TableCell>
-                <TableCell >Action</TableCell>
-            </TableRow>
-            </TableHead>
-            <TableBody>
-            {invoiceData.items.map((itemField, index) => (
-                <TableRow key={index}>
-                <TableCell  scope="row" style={{width: '40%' }}> <InputBase style={{width: '100%'}} outline="none" sx={{ ml: 1, flex: 1 }} type="text" name="itemName" onChange={e => handleChange(index, e)} value={itemField.itemName} placeholder="Item name or description" /> </TableCell>
-                <TableCell align="right"> <InputBase sx={{ ml: 1, flex: 1 }} type="number" name="quantity" onChange={e => handleChange(index, e)} value={itemField.quantity} placeholder="0" /> </TableCell>
-                <TableCell align="right"> <InputBase sx={{ ml: 1, flex: 1 }} type="number" name="unitPrice" onChange={e => handleChange(index, e)} value={itemField.unitPrice} placeholder="0" /> </TableCell>
-                <TableCell align="right"> <InputBase sx={{ ml: 1, flex: 1 }} type="number" name="discount"  onChange={e => handleChange(index, e)} value={itemField.discount} placeholder="0" /> </TableCell>
-                <TableCell align="right"> <InputBase sx={{ ml: 1, flex: 1 }} type="number" name="amount" onChange={e => handleChange(index, e)}  value={(itemField.quantity * itemField.unitPrice) - (itemField.quantity * itemField.unitPrice) * itemField.discount / 100} disabled /> </TableCell>
-                <TableCell align="right"> 
-                    <IconButton onClick={() =>handleRemoveField(index)}>
-                        <DeleteOutlineRoundedIcon style={{width: '20px', height: '20px'}}/>
-                    </IconButton>
-                </TableCell>
-                
-                </TableRow>
-            ))}
-            </TableBody>
-        </Table>
+            <TableContainer component={Paper} className="tb-container">
+            <Table className={classes.table} style={{ width: "100%" }} aria-label="simple table">
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Item</TableCell>
+                        <TableCell>Item Code</TableCell>
+                        <TableCell>HSN Code</TableCell>
+                        <TableCell>Make</TableCell>
+                        <TableCell>Qty</TableCell>
+                        <TableCell>Unit</TableCell>
+                        <TableCell>Price/Unit</TableCell>
+                        <TableCell>Discount</TableCell>
+                        <TableCell>Tax</TableCell>
+                        <TableCell>Amount</TableCell>
+                        <TableCell>Action</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {invoiceData.items.map((itemField, index) => {
+                        
+                        let baseAmount = itemField.quantity * itemField.unitPrice;
+                        let discountAmount = baseAmount * (itemField.discount / 100); // Convert discount to percentage
+                        let taxAmount = itemField.taxAmo === "" ? 0 : itemField.taxAmo; // Convert tax to percentage
+                        
+                        let calculatedValue = baseAmount - discountAmount + taxAmount;
+                    
+                        
+
+                        return ( 
+                        <TableRow key={index}>
+                            <TableCell scope="row" style={{ width: "20%" }}>
+                                {/* <InputBase style={{ width: "100%" }} outline="none" sx={{ ml: 1, flex: 1 }} type="text" name="itemName" onChange={e => handleChange(index, e)} value={itemField.itemName} placeholder="Item name or description" /> */}
+                                <ProductDropdown  index={index} itemField={itemField} handleChange={handleChange}/>
+                            </TableCell>
+                            <TableCell align="right" style={{ width: "5%" }}>
+                                <InputBase sx={{ ml: 1, flex: 1 }} type="text" name="itemCode" onChange={e => handleChange(index, e)} value={itemField.itemCode} />
+                            </TableCell>
+                            <TableCell align="right" style={{ width: "5%" }}>
+                                <InputBase sx={{ ml: 1, flex: 1 }} type="text" name="itemHsnCode" onChange={e => handleChange(index, e)} value={itemField.itemHsnCode} />
+                            </TableCell>
+                            <TableCell align="right" style={{ width: "5%" }}>
+                                <InputBase sx={{ ml: 1, flex: 1 }} type="text" name="itemMake" onChange={e => handleChange(index, e)} value={itemField.itemMake} />
+                            </TableCell>
+                            <TableCell align="right" style={{ width: "5%" }}>
+                                <InputBase sx={{ ml: 1, flex: 1 }} type="number" name="quantity" onChange={e => handleChange(index, e)} value={itemField.quantity} />
+                            </TableCell>
+                            <TableCell align="right" style={{ width: "5%" }}>
+                                <InputBase sx={{ ml: 1, flex: 1 }} type="text" name="itemUnit" onChange={e => handleChange(index, e)} value={itemField.itemUnit} />
+                            </TableCell>
+                            <TableCell align="right" style={{ width: "5%" }}>
+                                <InputBase sx={{ ml: 1, flex: 1 }} type="number" name="unitPrice" onChange={e => handleChange(index, e)} value={itemField.unitPrice} placeholder="0" />
+                            </TableCell>
+                           
+                            <TableCell align="right">
+                                <Discount index={index} itemField={itemField} handleChange={handleChange} />
+                            </TableCell>
+                            <TableCell align="right">
+                                <TaxDropdown index={index} itemField={itemField} handleChange={handleChange} />
+                            </TableCell>
+                            <TableCell align="right">
+                                <InputBase sx={{ ml: 1, flex: 1 }} type="number" name="amount" onChange={e => handleChange(index, e)} value={calculatedValue} disabled />
+                                
+                            </TableCell>
+                            <TableCell align="right">
+                                <IconButton onClick={() => handleRemoveField(index)}>
+                                    <DeleteOutlineRoundedIcon style={{ width: "20px", height: "20px" }} />
+                                </IconButton>
+                            </TableCell>
+                        </TableRow>   )  
+                        }
+                    )}
+                </TableBody>
+            </Table>
         </TableContainer>
+
             <div className={styles.addButton}>
                 <button onClick={handleAddField}>+</button>
             </div>
@@ -454,21 +531,7 @@ const Invoice = () => {
                             />
                         </ MuiPickersUtilsProvider>
                     </Grid>
-                    <Grid item style={{ width: 270, marginRight: 10 }}>
-                        <Autocomplete
-                                {...defaultProps}
-                                id="debug"
-                                debug
-                                    renderInput={(params) => <TextField {...params} 
-                                    label="Select currency" 
-                                    margin="normal" 
-                                    />}
-                                value={currency.value}
-                                onChange={(event, value) => setCurrency(value.value)}
-                                
-                            
-                        />
-                    </Grid>
+                    
                 </Grid>
                 
             </Container>

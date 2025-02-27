@@ -53,14 +53,14 @@ function AddTax() {
               className="form-input"
             />
           </div>
-          <div className="form-group">
+          <div className="form-group"       style={{display:"none"}}>
             <label htmlFor="type">Type:</label>
             <input
               id="type"
               type="text"
-              value={type}
+              value=""
+        
               onChange={(e) => setType(e.target.value)}
-              required
               className="form-input"
             />
           </div>

@@ -119,14 +119,52 @@ app.post('/taxes', async (req, res) => {
 // npm link phantomjs-prebuilt
 
 //CREATE AND SEND PDF INVOICE
-app.post('/create-pdf', (req, res) => {
-    pdf.create(pdfTemplate(req.body), {}).toFile('invoice.pdf', (err) => {
-        if(err) {
-            res.send(Promise.reject());
-        }
-        res.send(Promise.resolve());
-    });
+app.post('/create-pdf', async (req, res) => {
+  try {
+      const { id } = req.body;
+      if (!id) return res.status(400).json({ error: 'Invoice ID is required' });
+
+      // Fetch invoice data
+      const invoice = await InvoiceModel.findById(id).populate("selectedCompany.value");
+      if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+
+      // Generate PDF with fetched invoice data
+      pdf.create(pdfTemplate(invoice), {}).toFile('invoice.pdf', (err) => {
+          if (err) {
+              console.error('PDF generation error:', err); // Log error for debugging
+              return res.status(500).json({ error: 'PDF generation failed' });
+          }
+          res.status(200).json({ message: 'PDF Created' });
+      });
+
+  } catch (error) {
+      console.error('Server error:', error); // Log error for debugging
+      res.status(500).json({ error: 'Server Error', details: error.message });
+  }
 });
+
+app.get('/preview-invoice', async (req, res) => {
+  try {
+      const id = "67c0d291f160cb2578bfb423";
+      if (!id) return res.status(400).send('Invoice ID is required');
+
+      // Fetch invoice data
+      const invoice = await InvoiceModel.findById(id).populate("selectedCompany.value");
+      if (!invoice) return res.status(404).send('Invoice not found');
+
+      // Generate the invoice HTML
+      const invoiceHtml = pdfTemplate(invoice);
+
+      // Send the HTML as a response
+      res.send(invoiceHtml);
+
+  } catch (error) {
+      console.error('Server error:', error);
+      res.status(500).send('Server Error');
+  }
+});
+
+
 
 //second pdf
 
@@ -191,7 +229,7 @@ app.get('/', (req, res) => {
 
   app.get('/api/taxes', async(req ,res) =>{
     try{
-    const newTax = new TaxModel.find();
+    const newTax = await TaxModel.find();
     res.json(newTax);
 
     }catch(error){
@@ -201,6 +239,19 @@ app.get('/', (req, res) => {
   });
 
   app.use('/api', productRoutes);
+  app.post('/api/taxes', async (req, res) => {
+    const { name, rate, type } = req.body;
+    
+    const newTax = new TaxModel({ name, rate, type });
+  
+    try {
+      await newTax.save();
+      res.status(201).json({ message: 'Tax created successfully!', tax: newTax });
+    } catch (error) {
+      res.status(500).json({ message: 'Error creating tax', error });
+    }
+  
+  });
 
 
   app.use('/api/companies', companyRoutes);
