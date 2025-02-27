@@ -124,6 +124,17 @@ app.get('/', (req, res) => {
     }
   });
 
+  app.get('/api/taxes', async(req ,res) =>{
+    try{
+    const newTax = new TaxModel.find();
+    res.json(newTax);
+
+    }catch(error){
+      console.error('Error fetching tax:', error); // Log the actual error
+      res.status(500).json({ message: 'Error fetching tax data', error: error.message });
+    }
+  });
+
   app.post('/api/taxes', async (req, res) => {
     const { name, rate, type } = req.body;
   
