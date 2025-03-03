@@ -292,7 +292,7 @@ const Invoice = () => {
 
 
       if(!user) {
-        history.push('/login')
+        history.push('/')
       }
     return (
     <div className={styles.invoiceLayout}>

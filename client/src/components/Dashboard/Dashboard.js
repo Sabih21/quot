@@ -67,7 +67,7 @@ const Dashboard = () => {
     const partial = invoices?.filter((invoice) => invoice.status === 'Partial')
     
     if(!user) {
-        history.push('/login')
+        history.push('/')
       }
 
 
@@ -87,8 +87,7 @@ const Dashboard = () => {
 
       
     return (
-        "<div></div>"
-
+<div></div>
         // <div className={styles.pageContainer}>
            
     

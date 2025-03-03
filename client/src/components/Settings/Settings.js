@@ -10,7 +10,7 @@ const Settings = () => {
 
 
     if(!user) {
-        history.push('/login')
+        history.push('/')
       }
     
 

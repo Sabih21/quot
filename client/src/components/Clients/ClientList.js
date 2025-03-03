@@ -37,7 +37,7 @@ useEffect(() => {
   },[location, dispatch])
 
   if(!user) {
-    history.push('/login')
+    history.push('/')
   }
 
   

@@ -1,5 +1,4 @@
 
-//Copyright (c) 2022 Panshak Solomon
 
 import React from 'react'
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom'
@@ -35,12 +34,12 @@ function App() {
      {user && <NavBar />} 
       <Header />
         <Switch>
-          <Route path="/" exact component={Home} />
+          {/* <Route path="/" exact component={Home} /> */}
           <Route path="/invoice" exact component={Invoice} />
           <Route path="/edit/invoice/:id" exact component={Invoice} />
           <Route path="/invoice/:id" exact component={InvoiceDetails} />
           <Route path="/invoices" exact component={Invoices} />
-          <Route path="/login" exact component={Login} />
+          <Route path="/" exact component={Login} />
           <Route path="/tax" exact component={TaxList} />
           <Route path="/add/tax" exact component={AddTax} />
           <Route path="/update/tax" exact component={UpdateTax} />
