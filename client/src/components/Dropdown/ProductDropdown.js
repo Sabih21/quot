@@ -1,19 +1,28 @@
+
 import React, { useEffect, useState } from "react";
 import CreatableSelect from "react-select/creatable";
 import axios from "axios";
 
 const ProductDropdown = ({ index, itemField, handleChange }) => {
-    
     const [selectedOption, setSelectedOption] = useState(null);
     const [products, setProducts] = useState([]);
 
     useEffect(() => {
         axios.get("http://localhost:5000/api/products")
             .then(response => {
-                // debugger;
                 const options = response.data.map(pro => ({
                     value: pro._id,
-                    label: `${pro.item} - (₹ ${pro.pricePerUnit})`,
+                    label: pro.item, // Simple label for display when selected
+                    fullLabel: ( // Detailed label for dropdown options
+                        <div>
+                            <span style={{ fontSize: '12px', fontWeight: 500 }}>{pro.item}</span>
+                            <div style={{ fontSize: '10px', color: '#666', marginLeft: '8px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                            <div>Price: ₹{pro.pricePerUnit}</div>
+                                <div>HSN: {pro.hsnCode}</div>
+                                <div>Code: {pro.itemCode}</div>
+                            </div>
+                        </div>
+                    ),
                     itemCode: pro.itemCode,
                     hsnCode: pro.hsnCode,
                     price: pro.pricePerUnit,
@@ -21,22 +30,18 @@ const ProductDropdown = ({ index, itemField, handleChange }) => {
                     make: pro.make,
                     pname: pro.item
                 }));
-
                 setProducts(options);
             })
-            .catch(error => console.error("Error fetching taxes:", error));
+            .catch(error => console.error("Error fetching products:", error));
     }, []);
 
     const handleSelectChange = (selectedOption) => {
-        
+
+        if (typeof selectedOption === "string") {
+            selectedOption = { value: selectedOption, label: selectedOption, pname: selectedOption};
+        }
+
         setSelectedOption(selectedOption);
-
-        // // Calculate new amount with discount
-        // const newAmount = (unitPrice * quantity) - (unitPrice * quantity * discount / 100);
-
-        // // Update the row's discount and amount
-        // handleChange(index, { target: { name: "discount", value: discount } });
-        // handleChange(index, { target: { name: "amount", value: newAmount } });
         
         if (selectedOption) {
             handleChange(index, { target: { name: "itemCode", value: selectedOption.itemCode } });
@@ -57,20 +62,33 @@ const ProductDropdown = ({ index, itemField, handleChange }) => {
             handleChange(index, { target: { name: "itemUnit", value: selectedOption.unit } });
             handleChange(index, { target: { name: "itemMake", value: selectedOption.make } });
         }
-      
-        
-
     };
+
+    // Custom format for dropdown options
+    const formatOptionLabel = ({ fullLabel, label }) => (
+        <div>{fullLabel || label}</div>
+    );
 
     return (
         <CreatableSelect
             isClearable
             options={products}
+            value={selectedOption ? { 
+                value: selectedOption.value, 
+                label: selectedOption.pname 
+            } : null}
             onChange={handleSelectChange}
+            onCreateOption={handleSelectChange}
+            formatOptionLabel={formatOptionLabel}
             placeholder="Select or add a Item..."
             styles={{
                 container: (base) => ({ ...base, width: "100%" }),
                 menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                singleValue: (provided) => ({
+                    ...provided,
+                    fontSize: '12px',
+                    fontWeight: 500
+                })
             }}
             name="itemName"
             menuPortalTarget={document.body}

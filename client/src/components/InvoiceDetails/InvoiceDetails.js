@@ -135,24 +135,8 @@ const InvoiceDetails = () => {
   //Second pdf
   const createAndDownloadsecondPdf = () => {
     setDownloadStatus('loading')
-    axios.post('http://localhost:5000/create-secondpdf', 
-    { name: invoice.client.name,
-      address: invoice.client.address,
-      phone: invoice.client.phone,
-      email: invoice.client.email,
-      dueDate: invoice.dueDate,
-      date: invoice.createdAt,
-      id: invoice.invoiceNumber,
-      notes: invoice.notes,
-      subTotal: toCommas(invoice.subTotal),
-      total: toCommas(invoice.total),
-      type: invoice.type,
-      vat: invoice.vat,
-      items: invoice.items,
-      status: invoice.status,
-      totalAmountReceived: toCommas(totalAmountReceived),
-      balanceDue: toCommas(total - totalAmountReceived),
-      company: company,
+    axios.post(`${process.env.REACT_APP_API}/create-secondpdf`, 
+      { id: invoice._id,    
   })
   .then(() => axios.get(`${process.env.REACT_APP_API}/fetch-secondpdf`, { responseType: 'blob' }))
       .then((res) => {
@@ -165,24 +149,8 @@ const InvoiceDetails = () => {
   //Second pdf
   const createAndDownloadthirdPdf = () => {
     setDownloadStatus('loading')
-    axios.post('http://localhost:5000/create-thirdpdf', 
-    { name: invoice.client.name,
-      address: invoice.client.address,
-      phone: invoice.client.phone,
-      email: invoice.client.email,
-      dueDate: invoice.dueDate,
-      date: invoice.createdAt,
-      id: invoice.invoiceNumber,
-      notes: invoice.notes,
-      subTotal: toCommas(invoice.subTotal),
-      total: toCommas(invoice.total),
-      type: invoice.type,
-      vat: invoice.vat,
-      items: invoice.items,
-      status: invoice.status,
-      totalAmountReceived: toCommas(totalAmountReceived),
-      balanceDue: toCommas(total - totalAmountReceived),
-      company: company,
+    axios.post(`${process.env.REACT_APP_API}/create-thirdpdf`, 
+      { id: invoice._id,    
   })
   .then(() => axios.get(`${process.env.REACT_APP_API}/fetch-thirdpdf`, { responseType: 'blob' }))
       .then((res) => {

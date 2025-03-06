@@ -1,23 +1,31 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CreatableSelect from "react-select/creatable";
+import axios from "axios";
 
-const ClientDropdown = ({ clients, invoice, setClient, onClientChange }) => {
-    const [options, setOptions] = useState(
-        clients.map(client => ({ value: client.name, label: client.name }))
-    );
+const ClientDropdown = ({ clients, invoice, setClient, onClientChange, setNewClient,onChangeClient }) => {
+    const [options, setOptions] = useState([]);
+
+
+    const [clientsD, setClientsD] = useState([]);
+
+    useEffect(() => {
+        axios.get("http://localhost:5000/clients")
+        .then(response => {
+            const options = response.data.data.map(pro => ({
+                value: pro.name,
+                label: pro.name,
+            }));
+            setOptions(options);
+        })
+        .catch(error => console.error("Error fetching products:", error));
+    });
 
     const handleChange = (selectedOption) => {
+        // debugger;
         const clientData = selectedOption ? { name: selectedOption.value } : null;
         setClient(clientData);
-        if (onClientChange) onClientChange(clientData);  // Call invoice.js function
-    };
-
-    const handleCreate = (inputValue) => {
-        const newOption = { value: inputValue, label: inputValue };
-        setOptions([...options, newOption]);
-        const clientData = { name: inputValue };
-        setClient(clientData);
-        if (onClientChange) onClientChange(clientData);  // Call invoice.js function
+        onChangeClient(clientData);
+        if (onClientChange) onClientChange(clientData);
     };
 
     return (
@@ -25,7 +33,6 @@ const ClientDropdown = ({ clients, invoice, setClient, onClientChange }) => {
             isClearable
             options={options}
             onChange={handleChange}
-            onCreateOption={handleCreate}
             placeholder="Select or add a customer..."
             value={options.find(option => option.value === invoice?.client?.name) || null}
             styles={{ container: (base) => ({ ...base, width: "100%" }) }}

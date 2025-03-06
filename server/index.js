@@ -166,17 +166,57 @@ app.get('/preview-invoice', async (req, res) => {
 
 
 
-//second pdf
+//second 
+app.post('/create-pdf', async (req, res) => {
+  try {
+      const { id } = req.body;
+      if (!id) return res.status(400).json({ error: 'Invoice ID is required' });
 
-app.post('/create-secondpdf', (req, res) => {
-  console.log('Received request:', req.body); // Log the incoming request
-  pdf.create(pdfsecondTemplate(req.body), {}).toFile('secondinvoice.pdf', (err) => {
-    if (err) {
-      return res.status(500).send("Error creating PDF");
-    }
-    res.status(200).send("PDF created successfully");
-  });
+      // Fetch invoice data
+      const invoice = await InvoiceModel.findById(id).populate("selectedCompany.value");
+      if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+
+      // Generate PDF with fetched invoice data
+      pdf.create(pdfTemplate(invoice), {}).toFile('invoice.pdf', (err) => {
+          if (err) {
+              console.error('PDF generation error:', err); // Log error for debugging
+              return res.status(500).json({ error: 'PDF generation failed' });
+          }
+          res.status(200).json({ message: 'PDF Created' });
+      });
+
+  } catch (error) {
+      console.error('Server error:', error); // Log error for debugging
+      res.status(500).json({ error: 'Server Error', details: error.message });
+  }
 });
+
+app.post('/create-secondpdf', async (req, res) => {
+  try {
+    const { id } = req.body;
+    if (!id) return res.status(400).json({ error: 'Invoice ID is required' });
+
+    // Fetch invoice data from the database
+    const invoice = await InvoiceModel.findById(id).populate("selectedCompany.value");
+    if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+
+    console.log('Fetched Invoice Data:', invoice); // Debugging log
+
+    // Generate the PDF with fetched invoice data
+    pdf.create(pdfsecondTemplate(invoice), {}).toFile('secondinvoice.pdf', (err) => {
+      if (err) {
+        console.error('PDF generation error:', err);
+        return res.status(500).json({ error: 'PDF generation failed' });
+      }
+      res.status(200).json({ message: 'PDF Created Successfully' });
+    });
+
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ error: 'Server Error', details: error.message });
+  }
+});
+
 
 
 
@@ -187,14 +227,30 @@ app.get('/fetch-secondpdf', (req, res) => {
 
 //thirdPDF
 
-app.post('/create-thirdpdf', (req, res) => {
-  console.log('Received request:', req.body); // Log the incoming request
-  pdf.create(pdfthirdTemplate(req.body), {}).toFile('thirdinvoice.pdf', (err) => {
-    if (err) {
-      return res.status(500).send("Error creating PDF");
-    }
-    res.status(200).send("PDF created successfully");
-  });
+app.post('/create-thirdpdf', async (req, res) => {
+  try {
+    const { id } = req.body;
+    if (!id) return res.status(400).json({ error: 'Invoice ID is required' });
+
+    // Fetch invoice data from the database
+    const invoice = await InvoiceModel.findById(id).populate("selectedCompany.value");
+    if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+
+    console.log('Fetched Invoice Data:', invoice); // Debugging log
+
+    // Generate the PDF with fetched invoice data
+    pdf.create(pdfthirdTemplate(invoice), {}).toFile('thirdinvoice.pdf', (err) => {
+      if (err) {
+        console.error('PDF generation error:', err);
+        return res.status(500).json({ error: 'PDF generation failed' });
+      }
+      res.status(200).json({ message: 'PDF Created Successfully' });
+    });
+
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ error: 'Server Error', details: error.message });
+  }
 });
 
 app.get('/fetch-thirdpdf', (req, res) => {

@@ -1,5 +1,21 @@
 import moment from 'moment'
 
+const numberToWords = (num) => {
+    const a = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+    const b = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+    if (num === 0) return "Zero Rupees only";
+
+    const convert = (n) => {
+        if (n < 20) return a[n];
+        if (n < 100) return b[Math.floor(n / 10)] + (n % 10 !== 0 ? " " + a[n % 10] : "");
+        if (n < 1000) return a[Math.floor(n / 100)] + " Hundred" + (n % 100 !== 0 ? " and " + convert(n % 100) : "");
+        return "";
+    };
+
+    return convert(num) + " Rupees only";
+};
+
 export default function (
    { name,
       address,
@@ -17,218 +33,154 @@ export default function (
       status,
       totalAmountReceived,
       balanceDue,
-      company,
+      selectedCompany,
+      client,
+      invoiceNumber
    }) {
-    const today = new Date();
-return `
-<!DOCTYPE html>
-<html>
+    debugger;
+
+    let discountSum = 0, taxSum = 0, subtotalSum = 0;
+
+return `<!DOCTYPE html>
+<html lang="en">
 <head>
-<style>
-.invoice-container {
-    margin: 0;
-    padding: 85px;
-    padding-top: 15px;
-    font-family: 'Roboto', sans-serif;
-    width: 530px;
-    margin: 0px auto;
-    background-color: #fff9e6; /* Light yellow background */
-    border: 1px solid #ffebcc; /* Light yellow border */
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(255, 204, 0, 0.1); /* Soft yellow shadow */
-}
-
-table {
-  font-family: Arial, Helvetica, sans-serif;
-  border-collapse: collapse;
-  width: 100%;
-}
-
-table td, table th {
-  border: 1px solid #ffebcc; /* Light yellow border */
-  padding: 10px;
-}
-
-table tr:nth-child(even){background-color: #fff4e6;} /* Light yellow for even rows */
-
-table tr:hover {background-color: #ffe0b3;} /* Slightly darker yellow on hover */
-
-table th {
-  padding-top: 12px;
-  padding-bottom: 12px;
-  text-align: left;
-  background-color: #ffcc00; /* Yellow background for headers */
-  color: white; /* White text for headers */
-}
-
-.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 5px;
-}
-
-.address {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 10px 0px 15px 0px;
-    line-height: 10px;
-    font-size: 12px;
-    margin-top: -20px;
-}
-
-.status {
-    text-align: right;
-}
-
-.receipt-id {
-    text-align: right;
-}
-
-.title {
-    font-weight: 100px;
-    text-transform: uppercase;
-    color: #ffcc00; /* Yellow color for titles */
-    letter-spacing: 2px;
-    font-size: 8px;
-    line-height: 5px;
-}
-
-.summary {
-    margin-top: 2px;
-    margin-right: 0px;
-    margin-left: 50%;
-    margin-bottom: 15px;
-}
-
-img {
-    width: 100px;
-}
-
-/* Additional styles for a yellowish theme */
-h1, h2, h3, h4 {
-    color: #e6b800; /* Darker yellow for headings */
-}
-
-hr {
-    border: 0;
-    height: 1px;
-    background: #ffebcc; /* Light yellow for horizontal rules */
-    margin: 20px 0;
-}
-
-.summary table {
-    background-color: #fff4e6; /* Light yellow background for summary table */
-    border-radius: 5px;
-}
-
-.summary table th {
-    background-color: #ffcc00; /* Yellow background for summary headers */
-    color: white;
-}
-
-.summary table td {
-    background-color: #fff9e6; /* Light yellowish background for summary cells */
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+        .header {
+            background: red;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header img {
+            height: 50px;
+        }
+        .header .contact {
+            text-align: right;
+        }
+        .quotation {
+            text-align: right;
+            margin-top: 10px;
+        }
+        .table-container {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background: red;
+            color: white;
+        }
+        .totals {
+            text-align: right;
+            margin-top: 20px;
+        }
+        .signature {
+            margin-top: 30px;
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
-<div class="invoice-container">
-<section class="header">
+    <div class="header">
         <div>
-          ${company?.logo ? `<img src=${company?.logo} />` : `<h2>___</h2>`}
+            <h2>${selectedCompany.value.company_name}</h2>
+            <p>Description: ${selectedCompany.value.description}</p>
         </div>
-        <div class="receipt-id" style="margin-top: -120px 0 40px 0">
-            
+        <div class="contact">
+            <p>📞 +91-7909083806</p>
+            <p>📧 anand@narmadamotors.in</p>
         </div>
-</section>
-<section class="address">
-
-      <div style="margin-bottom: 100px; margin-top: 20px">
-      <p class="title">Bill to:</p>
-        <h4 style="font-size: 9px; line-height: 5px">${name}</h4>
-        <p style="font-size: 9px; line-height: 5px">${email}</p>
-        <p style="font-size: 9px; line-height: 5px">${phone}</p>
-        <p style="font-size: 9px; line-height: 5px">${address}</p>
-      </div>
-
-    <div class="status" style="margin-top: -280px">
-        <h1 style="font-size: 12px">${Number(balanceDue) <= 0 ? 'Receipt' : type}</h1>
-        <p style="font-size: 8px; margin-bottom: 10px">${id}</p>
-        <p class="title" style="font-size: 8px">Status</p>
-        <h3 style="font-size: 12px">${status}</h3>
-        <p class="title" style="font-size: 8px">Date</p>
-        <p style="font-size: 9px">${moment(date).format('ll')}</p>
-        <p class="title" style="font-size: 8px">Due Date</p>
-        <p style="font-size: 9px">${moment(dueDate).format('ll')}</p>
-        <p class="title" style="font-size: 8px">Amount</p>
-        <h3 style="font-size: 12px">${total}</h3>
     </div>
-</section>
 
-<table>
-  <tr>
-    <th style="font-size: 9px">Item</th>
-    <th style="font-size: 9px">Quantity</th>
-    <th style="font-size: 9px">Price</th>
-    <th style="font-size: 9px">Discount(%)</th>
-    <th style="text-align: right; font-size: 9px">Amount</th>
-  </tr>
+    <div class="quotation">
+        <h2>Quotation</h2>
+        <p><strong>Estimate No:</strong> ${invoiceNumber}</p>
+        <p><strong>Date:</strong> ${moment(date).format('LL')}</p>
+    </div>
 
-  ${
-   items.map((item) => (
- `  <tr>
-    <td style="font-size: 9px">${item.itemName}</td>
-    <td style="font-size: 9px">${item.quantity}</td>
-    <td style="font-size: 9px">${item.unitPrice}</td>
-    <td style="font-size: 9px">${item.discount}</td>
-    <td style="text-align: right; font-size: 9px">${(item.quantity * item.unitPrice) - (item.quantity * item.unitPrice) * item.discount / 100}</td>
-  </tr>` 
-   ))
-  }
-</table>
+    <h3>Estimate For: <strong>${name}</strong></h3>
 
-<section class="summary">
     <table>
         <tr>
-          <th style="font-size: 9px">Invoice Summary</th>
-          <th></th>
+            <th>#</th>
+            <th>Item Name</th>
+            <th>HSN/SAC</th>
+            <th>Quantity</th>
+            <th>Price/Unit</th>
+            <th>Discount</th>
+            <th>Tax</th>
+            <th>Amount</th>
         </tr>
+        ${items.map((item, index) => {
+            let unitPrice = item.unitPrice ?? 0;
+            let quantity = item.quantity ?? 0;
+            let discountPer = item.discountPer ?? 0;
+            let tax = item.tax ?? 0;
+
+            let itemTotal = unitPrice * quantity;
+            let itemDiscount = (itemTotal * discountPer) / 100;
+            let itemTax = (itemTotal * tax) / 100;
+            let itemSubtotal = itemTotal - itemDiscount + itemTax;
+
+            // Accumulate totals
+            discountSum += itemDiscount;
+            taxSum += itemTax;
+            subtotalSum += itemSubtotal;
+
+            return `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${item.itemName}</td>
+                    <td>8708</td>
+                    <td>${item.quantity}</td>
+                    <td>₹ ${item.unitPrice}</td>
+                    <td>₹ ${((item.unitPrice ?? 0) * (item.quantity ?? 0) * (item.discountPer ?? 0) / 100).toFixed(2)} (${item.discountPer ?? 0}%)</td>
+                    <td>₹ ${((item.unitPrice ?? 0) * (item.quantity ?? 0) * (item.tax ?? 0) / 100).toFixed(2)} (${item.tax ?? 0}%)</td>
+                    <td>₹ ${(((item.unitPrice ?? 0) * (item.quantity ?? 0)) - 
+                            ((item.unitPrice ?? 0) * (item.quantity ?? 0) * (item.discountPer ?? 0) / 100) + 
+                            ((item.unitPrice ?? 0) * (item.quantity ?? 0) * (item.tax ?? 0) / 100)).toFixed(2)}</td>
+                </tr>`;
+        }).join('')}
         <tr>
-          <td style="font-size: 9px">Sub Total</td>
-          <td style="text-align: right; font-size: 9px; font-weight: 700">${subTotal}</td>
+            <td colspan="5"><strong>Total</strong></td>
+            <td>₹ ${discountSum.toFixed(2)}</td>
+            <td>₹ ${taxSum.toFixed(2)}</td>
+            <td>₹ ${subtotalSum.toFixed(2)}</td>
         </tr>
+    </table>
 
-        <tr>
-            <td style="font-size: 10px">VAT</td>
-            <td style="text-align: right; font-size: 9px; font-weight: 700">${vat}</td>
-          </tr>
+    <div class="totals">
+        <p><strong>Sub Total:</strong> ${numberToWords(subtotalSum)}</p>
+        <p><strong>Discount:</strong> ₹ 10.59</p>
+        <p><strong>SGST @9%:</strong> ₹ 6.67</p>
+        <p><strong>CGST @9%:</strong> ₹ 6.67</p>
+        <p><strong>Round Off:</strong> ₹ 0.50</p>
+        <p><strong>Total:</strong> ₹ 88.00</p>
+    </div>
 
-        <tr>
-            <td style="font-size: 10px">Total</td>
-            <td style="text-align: right; font-size: 9px; font-weight: 700">${total}</td>
-          </tr>
-
-        <tr>
-            <td style="font-size: 10px" >Paid</td>
-            <td style="text-align: right; font-size: 9px; font-weight: 700">${totalAmountReceived}</td>
-          </tr>
-
-          <tr>
-          <td style="font-size: 9px">Balance Due</td>
-          <td style="text-align: right; font-size: 9px; font-weight: 700">${balanceDue}</td>
-        </tr>
-        
-      </table>
-  </section>
-  <div>
-      <hr>
-      <h4 style="font-size: 9px">Note</h4>
-      <p style="font-size: 9px">${notes}</p>
-  </div>
-</div>
+    <div class="signature">
+        <p>For: ${name}</p>
+        <img src="http://localhost:5000/uploads/${selectedCompany.value.image}" alt="${selectedCompany.value.company_name}" />
+    </div>
 </body>
 </html>`
 
